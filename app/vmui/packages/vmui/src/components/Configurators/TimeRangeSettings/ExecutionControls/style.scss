@@ -17,30 +17,8 @@
       gap: $padding-medium;
     }
 
-    &__arrow {
+    &__auto-refresh {
       display: flex;
-      align-items: center;
-      justify-content: center;
-      transform: rotate(0);
-      transition: transform 200ms ease-in-out;
-
-      &_open {
-        transform: rotate(180deg);
-      }
-    }
-  }
-
-  &-list {
-    width: 124px;
-    max-height: 208px;
-    overflow: auto;
-    padding: $padding-small 0;
-    font-size: $font-size;
-
-    &_mobile {
-      width: 100%;
-      max-height: calc(($vh * 100) - 70px);
-      padding: 0;
     }
   }
 }

@@ -7,6 +7,7 @@ import { useQueryDispatch, useQueryState } from "../../../state/query/QueryState
 import { useTimeDispatch } from "../../../state/time/TimeStateContext";
 import { getQueryStringValue } from "../../../utils/query-string";
 import {
+  ArrowDownIcon,
   DeleteIcon,
   PlayIcon,
   PlusIcon,
@@ -28,6 +29,7 @@ import { usePrettifyQuery } from "./hooks/usePrettifyQuery";
 import QueryHistory from "../../../components/QueryHistory/QueryHistory";
 import QueryEditorAutocomplete from "../../../components/Configurators/QueryEditor/QueryEditorAutocomplete";
 import { getUpdatedHistory } from "../../../components/QueryHistory/utils";
+import AutoRefreshControl from "../../../components/Configurators/TimeRangeSettings/AutoRefreshControl/AutoRefreshControl";
 
 export interface QueryConfiguratorProps {
   queryErrors?: string[];
@@ -37,6 +39,7 @@ export interface QueryConfiguratorProps {
   label?: string;
   isLoading?: boolean;
   includeFunctions?: boolean;
+  useAutorefresh?: boolean;
   onHideQuery?: (queries: number[]) => void
   onRunQuery: () => void;
   abortFetch?: () => void;
@@ -61,6 +64,7 @@ const QueryConfigurator: FC<QueryConfiguratorProps> = ({
   label,
   isLoading,
   includeFunctions = true,
+  useAutorefresh = false,
   onHideQuery,
   onRunQuery,
   abortFetch,
@@ -91,12 +95,13 @@ const QueryConfigurator: FC<QueryConfiguratorProps> = ({
     });
   };
 
-  const handleRunQuery = () => {
+  const handleRunQuery = (updateQueryHistory = true, abortLoadingQuery = true) => {
     if (isLoading) {
+      if (!abortLoadingQuery) return;
       abortFetch && abortFetch();
       return;
     }
-    updateHistory();
+    if (updateQueryHistory) updateHistory();
     queryDispatch({ type: "SET_QUERY", payload: stateQuery });
     timeDispatch({ type: "RUN_QUERY" });
     onRunQuery();
@@ -285,13 +290,52 @@ const QueryConfigurator: FC<QueryConfiguratorProps> = ({
             Add Query
           </Button>
         )}
-        <Button
-          variant="contained"
-          onClick={handleRunQuery}
-          startIcon={isLoading ? <SpinnerIcon/> : <PlayIcon/>}
-        >
-          {`${isLoading ? "Cancel" : "Execute"} ${isMobile ? "" : "Query"}`}
-        </Button>
+        {useAutorefresh ? (
+          <AutoRefreshControl
+            anchorClassName="vm-query-configurator-execute"
+            onRefresh={() => handleRunQuery(false, false)}
+          >
+            {({ open, selectedDelay, toggle }) => <>
+              <Button
+                variant="contained"
+                onClick={() => handleRunQuery()}
+                startIcon={isLoading ? <SpinnerIcon/> : <PlayIcon/>}
+                className="vm-query-configurator-execute__button"
+              >
+                {isLoading
+                  ? "Cancel"
+                  : `Execute${selectedDelay !== "Off" ? ` (every: ${selectedDelay})` : ""}`}
+              </Button>
+              <Tooltip title="Auto-refresh control">
+                <Button
+                  variant="contained"
+                  color="primary"
+                  className="vm-query-configurator-execute__options"
+                  ariaLabel={`Auto-refresh control, current interval: ${selectedDelay}`}
+                  endIcon={(
+                    <div
+                      className={classNames({
+                        "vm-auto-refresh-control__arrow": true,
+                        "vm-auto-refresh-control__arrow_open": open,
+                      })}
+                    >
+                      <ArrowDownIcon/>
+                    </div>
+                  )}
+                  onClick={toggle}
+                />
+              </Tooltip>
+            </>}
+          </AutoRefreshControl>
+        ) : (
+          <Button
+            variant="contained"
+            onClick={() => handleRunQuery()}
+            startIcon={isLoading ? <SpinnerIcon/> : <PlayIcon/>}
+          >
+            {isLoading ? "Cancel" : "Execute"}
+          </Button>
+        )}
       </div>
     </div>
   </div>;

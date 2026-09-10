@@ -1,0 +1,39 @@
+@use "src/styles/variables" as *;
+
+.vm-auto-refresh-control {
+
+  &__arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: rotate(0);
+    transition: transform 200ms ease-in-out;
+
+    &_open {
+      transform: rotate(180deg);
+    }
+  }
+
+  &-list {
+    width: 124px;
+    max-height: 208px;
+    overflow: auto;
+    padding: $padding-small 0;
+    font-size: $font-size;
+
+    .vm-list-item {
+      display: block;
+      width: 100%;
+      border: 0;
+      color: inherit;
+      font: inherit;
+      text-align: left;
+    }
+
+    &_mobile {
+      width: 100%;
+      max-height: calc(($vh * 100) - 70px);
+      padding: 0;
+    }
+  }
+}
